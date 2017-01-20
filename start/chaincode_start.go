@@ -41,12 +41,16 @@ func main() {
 // Init resets all the things
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) ([]byte, error) {
 	_, args := stub.GetFunctionAndParameters()
-	
-	fmt.Printf("Running Init method")
 	if len(args) != 0 {
 	    	return nil, errors.New("Incorrect number of arguments. Expecting 0")
 	}
 	
+	fmt.Printf("Running Init method")
+	err := stub.PutState("hello_world", []byte(args[0]))
+	
+	if err != nil {
+        return nil, err
+    }
 	return nil, nil
 }
 
@@ -71,11 +75,33 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface) ([]byte, error
 function, args := stub.GetFunctionAndParameters()
 	fmt.Println("args === " + args[0])
 	// Handle different s
-	if  function == "dummy_query" {											//read a variable
+	if  function == "dummy_query" {	
+         //read a variable
+        return t.read(stub, args)
+    }
+	//read a variable
 		fmt.Println("ZZZZZZZZ QUERY")						//error
 		return nil, nil;
-	}
+	
 	fmt.Println("query did not find func: ")						//error
 
 	return nil, errors.New("Received unknown  query: ")
+}
+
+func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+  var name, jsonResp string
+    var err error
+	//function, args := stub.GetFunctionAndParameters()
+    if len(args) != 1 {
+        return nil, errors.New("Incorrect number of arguments. Expecting name of the var to query")
+    }
+
+    name = args[0]
+    valAsbytes, err := stub.GetState(name)
+    if err != nil {
+        jsonResp = "{\"Error\":\"Failed to get state for " + name + "\"}"
+        return nil, errors.New(jsonResp)
+    }
+
+    return valAsbytes, nil
 }
