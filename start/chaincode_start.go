@@ -59,31 +59,35 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) ([]byte, erro
 	fmt.Println("invoke is running ")
      function, args := stub.GetFunctionAndParameters()
 	 fmt.Println("args === " + args[0])
+	 errst := stub.PutState("hello_world", []byte(args[0]))
+	if errst != nil {
+        return nil, errst
+    }
+	
 	// Handle different s
 	if   function == "init" {						
 	//initialize the chaincode state, used as reset
 		return t.Init(stub)
-	}
+	}else if function == "Read" {
+		// Assign ownership
+		return t.read(stub, args)
 	fmt.Println("invoke did not find func: ")					//error
 
 	return nil, errors.New("Received unknown  invocation: ")
 }
 
 // Query is our entry point for queries
-func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface) ([]byte, error) {
-	fmt.Println("query is running ")
-function, args := stub.GetFunctionAndParameters()
+func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	
+    function, args := stub.GetFunctionAndParameters()
 	fmt.Println("args === " + args[0])
-	// Handle different s
-	if  function == "dummy_query" {	
+	// Handle different 
+	if function == "dummy_query" {	
          //read a variable
         return t.read(stub, args)
     }
-	//read a variable
-		fmt.Println("ZZZZZZZZ QUERY")						//error
-		return nil, nil;
 	
-	fmt.Println("query did not find func: ")						//error
+	fmt.Println("query did not find func: ")						
 
 	return nil, errors.New("Received unknown  query: ")
 }
